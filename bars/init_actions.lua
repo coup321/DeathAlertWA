@@ -112,10 +112,14 @@ function DamageHistory:addDamage(health, ...)
     if eventType == "SWING_DAMAGE" then
         local damageEvent = DamageEvent:fromSwing(health, ...)
         table.insert(self.history, damageEvent)
+
+    else -- there are multiple spell damage types
+        local damageEvent = DamageEvent:fromSpell(health, ...)
+        table.insert(self.history, damageEvent)
     end
 
-    if eventType == "SPELL_DAMAGE" then
-        local damageEvent = DamageEvent:fromSpell(health, ...)
+    if eventType == "ENVIRONMENTAL_DAMAGE" then
+        local damageEvent = DamageEvent:fromEnvironmental(health, ...)
         table.insert(self.history, damageEvent)
     end
 end
@@ -132,9 +136,9 @@ end
 local Player = {}
 Player.__index = Player
 
-function Player:new(unitId)
+function Player:new(unitId, historySize)
     local instance = setmetatable({}, Player)
-    instance.damageHistory = DamageHistory:new(3)
+    instance.damageHistory = DamageHistory:new(historySize)
     instance.health = UnitHealth(unitId, false) / UnitHealthMax(unitId)
     instance.name = UnitName(unitId)
     instance.guid = UnitGUID(unitId)
@@ -178,7 +182,7 @@ function StateEmitter:run(player, emitTime)
             total = 1,
             duration = 5,
             expirationTime = GetTime() + 5,
-            amount = self.ammount(player), -- returns a formatted string
+            amount = self:formatAmount(damageEvent.amount), -- returns a formatted string
             abilityName = damageEvent.abilityName,
             timeDelta = damageEvent:getTimeDelta(emitTime),
             icon = damageEvent:getIcon(),
@@ -187,8 +191,29 @@ function StateEmitter:run(player, emitTime)
     return newEvents
 end
 
-function StateEmitter:amount(player)
-    return string.format("%ik", player.amount/1000)
+
+function StateEmitter:runMdi(player, emitTime)
+    local history = player:getDamageHistory():getLastDamage()
+    local newEvents = {}
+    for i, damageEvent in ipairs(history) do
+        newEvents[i] = {
+            show = true,
+            changed = true,
+            autoHide = true,
+            duration = 5,
+            expirationTime = GetTime() + 5,
+            amount = self:formatAmount(damageEvent.amount), -- returns a formatted string
+            abilityName = damageEvent.abilityName,
+            icon = damageEvent:getIcon(),
+            unitId = player.unitId,
+            sourceName = damageEvent.sourceName
+        }
+    end
+    return newEvents
+end
+
+function StateEmitter:formatAmount(amount)
+    return string.format("%iK", amount/1000)
 end
 
 
@@ -204,35 +229,134 @@ function Group:new()
 end
 
 
-function Group:addPlayer(unitId)
+function Group:addPlayer(unitId, historySize)
     local playerGUID = UnitGUID(unitId)
     if not self.players[playerGUID] then
-        self.players[playerGUID] = Player:new(unitId)
+        self.players[playerGUID] = Player:new(unitId, historySize)
     end
 end
 
-function Group:update()
+function Group:update(historySize)
     self.players = {}
     for unitId in WA_IterateGroupMembers() do
         local name = UnitName(unitId)
         print("added: " .. name)
-        self:addPlayer(unitId)
+        self:addPlayer(unitId, historySize)
     end
+    return self
 end
 
 function Group:getPlayer(GUID)
     return self.players[GUID]
 end
 
+-- EventHandler
+local EventHandler = {}
+EventHandler.__index = EventHandler
 
--- Setup WA Environment
-
-aura_env.round = function (num, numDecimalPlaces)
-    local mult = 10^(numDecimalPlaces or 0)
-    num = num or 0
-    return math.floor(num * mult + 0.5) / mult
+function EventHandler:new()
+    local instance = setmetatable({}, EventHandler)
+    instance.group = nil
+    instance.playerDied = false
+    instance.newStates = {}
+    instance.historySize = nil
+    return instance
 end
 
-aura_env.group = Group:new()
-aura_env.group:update()
-aura_env.stateEmitter = StateEmitter:new()
+function EventHandler:process(historySize, ...)
+    local event, _, subEvent = ...
+
+    local damageEvents = {
+        SPELL_DAMAGE = true,
+        SWING_DAMAGE = true,
+        RANGE_DAMAGE = true,
+        SPELL_PERIODIC_DAMAGE = true,
+        SPELL_BUILDING_DAMAGE = true
+    }
+
+    if self.group == nil then
+        self.group = Group:update(historySize)
+    end
+    
+    if subEvent == "GROUP_ROSTER_UPDATE" then
+        self:roster(historySize)
+        
+    elseif  event == "UNIT_HEALTH" then
+        self:health(...)
+
+    elseif  subEvent == "UNIT_DIED" then
+        return self:activePlayerDied(...)
+
+
+    elseif damageEvents[subEvent] then
+        self:damage(...)
+    end
+end
+
+function EventHandler:activePlayerDied(...)
+    local destGUID = select(9, ...)
+    local player = self.group:getPlayer(destGUID)
+    if player then
+        return true
+    end
+    return false
+end
+
+function EventHandler:roster(historySize)
+    self.group = Group:update(historySize)
+end
+
+function EventHandler:damage(...)
+        local destGUID = select(9, ...)
+        local player = self.group:getPlayer(destGUID)
+        if player then
+            player:getDamageHistory():addDamage(player.health, ...)
+        end
+end
+
+function EventHandler:health(...)
+    local _, unitId = ...
+    local unitGUID = UnitGUID(unitId)
+    local player = self.group:getPlayer(unitGUID)
+    if player then
+        player:updateHealth()
+    end
+end
+
+function EventHandler:death(runType, ...)
+    local destGUID = select(9, ...)
+    local player = self.group:getPlayer(destGUID)
+    
+    if player then
+        self.playerDied = true
+        WeakAuras.ScanEvents("DEATHLOG_WA", player.name)
+        local destGUID = select(9, ...)
+        local eventTime = select(2, ...)
+        local stateEmitter = StateEmitter:new()
+        if runType == "mdi" then
+            self.newStates = stateEmitter:runMdi(player, eventTime)
+            print(player.unitId)
+        elseif runType == "recap" then
+            self.newStates = stateEmitter:run(player, eventTime)
+        end
+        player:getDamageHistory():resetHistory()
+        return self.newStates
+    end
+end
+
+function EventHandler:unitDied()
+    if self.playerDied == true then
+        self.playerDied = false
+        return true
+    end
+    return false
+end
+
+function EventHandler:getStates()
+    return self.newStates
+end
+
+
+-- Setup WA Environment
+local eventHandler = EventHandler:new()
+aura_env.eventHandler = eventHandler

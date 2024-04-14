@@ -3,7 +3,7 @@ function (allstates, ...)
     local historySize = 4
     local activePlayerDied = eventHandler:process(historySize, ...)
     if activePlayerDied == true then
-        local newStates = eventHandler:death(...)
+        local newStates = eventHandler:death("recap", ...)
         for key, newState in pairs(newStates) do
             allstates[key] = newState
         end
