@@ -169,11 +169,11 @@ function StateEmitter:new()
     return instance
 end
 
-function StateEmitter:run(player, emitTime)
+function StateEmitter:runRecap(player, emitTime)
     local history = player:getDamageHistory():getLastDamage()
     local newEvents = {}
     for i, damageEvent in ipairs(history) do
-        newEvents[i] = {
+        newEvents[player.name .. i] = {
             show = true,
             changed = true,
             autoHide = true,
@@ -189,6 +189,26 @@ function StateEmitter:run(player, emitTime)
             icon = damageEvent:getIcon(),
         }
     end
+    -- for simulation
+    for i, damageEvent in ipairs(history) do
+        newEvents[player.name .. i] = {
+            show = true,
+            changed = true,
+            autoHide = true,
+            progressType = "static",
+            value = damageEvent.health,
+            total = 1,
+            duration = 5,
+            expirationTime = GetTime() + 5,
+            amount = self:formatAmount(damageEvent.amount), -- returns a formatted string
+            abilityName = damageEvent.abilityName,
+            sourceName = damageEvent.sourceName,
+            timeDelta = damageEvent:getTimeDelta(emitTime),
+            icon = damageEvent:getIcon(),
+        }
+    end
+
+    -- end for simulation 
     return newEvents
 end
 
@@ -197,7 +217,7 @@ function StateEmitter:runMdi(player, emitTime)
     local history = player:getDamageHistory():getLastDamage()
     local newEvents = {}
     for i, damageEvent in ipairs(history) do
-        newEvents[i] = {
+        newEvents[player.name .. i] = {
             show = true,
             changed = true,
             autoHide = true,
@@ -212,19 +232,6 @@ function StateEmitter:runMdi(player, emitTime)
     end
     return newEvents
 end
-
-function StateEmitter:sendPlayerName()
-        local state = {
-            show = true,
-            changed = true,
-            autoHide = true,
-            duration = 5,
-            expirationTime = GetTime() + 5,
-            playerName = self.player.playerName,
-        }
-        return state
-end
-
 
 function StateEmitter:formatAmount(amount)
     return string.format("%iK", amount/1000)
@@ -350,7 +357,7 @@ function EventHandler:death(runType, ...)
             self.newStates = stateEmitter:runMdi(player, eventTime)
         elseif runType == "recap" then
             WeakAuras.ScanEvents("DEATHLOG_WA", player.name)
-            self.newStates = stateEmitter:run(player, eventTime)
+            self.newStates = stateEmitter:runRecap(player, eventTime)
         end
         player:getDamageHistory():resetHistory()
         return self.newStates

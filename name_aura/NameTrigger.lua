@@ -1,7 +1,7 @@
 function(allstates, ...)
     local event, name = ...
     if event == "DEATHLOG_WA" then
-        allstates["PLAYERNAME"] = {
+        allstates[name] = {
             show = true,
             changed = true,
             autoHide = true,
