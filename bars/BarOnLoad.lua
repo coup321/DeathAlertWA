@@ -356,11 +356,7 @@ function EventHandler:death(runType, ...)
         if runType == "mdi" then
             self.newStates = stateEmitter:runMdi(player, eventTime)
         elseif runType == "recap" then
-            WeakAuras.ScanEvents("DEATHLOG_WA", player.name)
             self.newStates = stateEmitter:runRecap(player, eventTime)
-            -- for simulation of duplicates
-            WeakAuras.ScanEvents("DEATHLOG_WA", player.name .. 2)
-            -- simulation
         end
         player:getDamageHistory():resetHistory()
         return self.newStates
