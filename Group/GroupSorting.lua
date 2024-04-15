@@ -1,6 +1,8 @@
 function(a, b)
-    if a.region.state.sortIndex and b.region.state.sortIndex then
-        return a.region.state.sortIndex <= b.region.state.sortIndex
+    local a = a.region.state.sortIndex
+    local b = b.region.state.sortIndex
+    if  a and b then
+        return a <= b
     end
     return false
 end

@@ -166,17 +166,19 @@ StateEmitter.__index = StateEmitter
 
 function StateEmitter:new()
     local instance = setmetatable({},StateEmitter)
-    instance.allStateIdx = 1
+    instance.sortIndex = 1
     return instance
 end
 
 function StateEmitter:runRecap(player, emitTime)
     local history = player:getDamageHistory():getLastDamage()
     local newEvents = {}
-    WeakAuras.ScanEvents("DEATHLOG_WA", player.name, self.allStateIdx)
-    self:advanceAllStateIndex()
+    self:runMdi(player, nil)
+    self:advanceSortIndex()
+    WeakAuras.ScanEvents("DEATHLOG_WA", player.name, self.sortIndex)
+    self:advanceSortIndex()
     for i, damageEvent in ipairs(history) do
-        newEvents[self.allStateIdx] = {
+        newEvents[self.sortIndex] = {
             show = true,
             changed = true,
             autoHide = true,
@@ -190,66 +192,33 @@ function StateEmitter:runRecap(player, emitTime)
             sourceName = damageEvent.sourceName,
             timeDelta = damageEvent:getTimeDelta(emitTime),
             icon = damageEvent:getIcon(),
-            sortIndex = self.allStateIdx
+            sortIndex = self.sortIndex
         }
-        self:advanceAllStateIndex()
+        self:advanceSortIndex()
     end 
-    -- for simulation
-
-    WeakAuras.ScanEvents("DEATHLOG_WA", player.name .. 2, self.allStateIdx)
-    self:advanceAllStateIndex()
-    for i, damageEvent in ipairs(history) do
-        newEvents[self.allStateIdx] = {
-            show = true,
-            changed = true,
-            autoHide = true,
-            progressType = "static",
-            value = damageEvent.health,
-            total = 1,
-            duration = 5,
-            expirationTime = GetTime() + 5,
-            amount = self:formatAmount(damageEvent.amount), -- returns a formatted string
-            abilityName = damageEvent.abilityName,
-            sourceName = damageEvent.sourceName,
-            timeDelta = damageEvent:getTimeDelta(emitTime),
-            icon = damageEvent:getIcon(),
-            sortIndex = self.allStateIdx
-        }
-        self:advanceAllStateIndex()
-    end
-    -- end for simulation 
+    self:advanceSortIndex()
     return newEvents
 end
 
 
 function StateEmitter:runMdi(player, emitTime)
     local history = player:getDamageHistory():getLastDamage()
-    local newEvents = {}
-    for i, damageEvent in ipairs(history) do
-        newEvents[i] = {
-            show = true,
-            changed = true,
-            autoHide = true,
-            duration = 5,
-            expirationTime = GetTime() + 5,
-            amount = self:formatAmount(damageEvent.amount), -- returns a formatted string
-            abilityName = damageEvent.abilityName,
-            icon = damageEvent:getIcon(),
-            unitId = player.unitId,
-            sourceName = damageEvent.sourceName,
-            sortIndex = self.allStateIdx
-        }
-        self:advanceAllStateIndex()
-    end
-    return newEvents
+    local damageEvent = history[#history]
+    local unitId = player.unitId
+    local abilityName = damageEvent.abilityName
+    local amount = self:formatAmount(damageEvent.amount)
+    local sourceName = damageEvent.sourceName
+    local icon = damageEvent:getIcon()
+    WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex)
+    self:advanceSortIndex()
 end
 
 function StateEmitter:formatAmount(amount)
     return string.format("%iK", amount/1000)
 end
 
-function StateEmitter:advanceAllStateIndex()
-    self.allStateIdx = self.allStateIdx + 1
+function StateEmitter:advanceSortIndex()
+    self.sortIndex = self.sortIndex + 1
 end
 
 
@@ -364,7 +333,6 @@ function EventHandler:death(runType, ...)
     
     if player then
         self.playerDied = true
-        local destGUID = select(9, ...)
         local eventTime = select(2, ...)
         local stateEmitter = StateEmitter:new()
         if runType == "mdi" then
