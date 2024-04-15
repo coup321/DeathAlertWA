@@ -6,7 +6,7 @@ function()
         local sourceName = aura_env.state.sourceName
         local amount = aura_env.state.amount
 
-        local maxLength = 30
+        local maxLength = 22
 
         if #abilityName > maxLength then
             abilityName = string.sub(abilityName, 0, maxLength)

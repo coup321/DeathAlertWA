@@ -166,14 +166,17 @@ StateEmitter.__index = StateEmitter
 
 function StateEmitter:new()
     local instance = setmetatable({},StateEmitter)
+    instance.allStateIdx = 1
     return instance
 end
 
 function StateEmitter:runRecap(player, emitTime)
     local history = player:getDamageHistory():getLastDamage()
     local newEvents = {}
+    WeakAuras.ScanEvents("DEATHLOG_WA", player.name, self.allStateIdx)
+    self:advanceAllStateIndex()
     for i, damageEvent in ipairs(history) do
-        newEvents[i] = {
+        newEvents[self.allStateIdx] = {
             show = true,
             changed = true,
             autoHide = true,
@@ -187,11 +190,16 @@ function StateEmitter:runRecap(player, emitTime)
             sourceName = damageEvent.sourceName,
             timeDelta = damageEvent:getTimeDelta(emitTime),
             icon = damageEvent:getIcon(),
+            sortIndex = self.allStateIdx
         }
-    end
+        self:advanceAllStateIndex()
+    end 
     -- for simulation
+
+    WeakAuras.ScanEvents("DEATHLOG_WA", player.name .. 2, self.allStateIdx)
+    self:advanceAllStateIndex()
     for i, damageEvent in ipairs(history) do
-        newEvents[i + 100] = {
+        newEvents[self.allStateIdx] = {
             show = true,
             changed = true,
             autoHide = true,
@@ -205,7 +213,9 @@ function StateEmitter:runRecap(player, emitTime)
             sourceName = damageEvent.sourceName,
             timeDelta = damageEvent:getTimeDelta(emitTime),
             icon = damageEvent:getIcon(),
+            sortIndex = self.allStateIdx
         }
+        self:advanceAllStateIndex()
     end
     -- end for simulation 
     return newEvents
@@ -226,8 +236,10 @@ function StateEmitter:runMdi(player, emitTime)
             abilityName = damageEvent.abilityName,
             icon = damageEvent:getIcon(),
             unitId = player.unitId,
-            sourceName = damageEvent.sourceName
+            sourceName = damageEvent.sourceName,
+            sortIndex = self.allStateIdx
         }
+        self:advanceAllStateIndex()
     end
     return newEvents
 end
@@ -236,6 +248,9 @@ function StateEmitter:formatAmount(amount)
     return string.format("%iK", amount/1000)
 end
 
+function StateEmitter:advanceAllStateIndex()
+    self.allStateIdx = self.allStateIdx + 1
+end
 
 
 -- Group

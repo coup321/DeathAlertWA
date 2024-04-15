@@ -1,13 +1,14 @@
 function(allstates, ...)
-    local event, name, allstatesIndex = ...
+    local event, name, sortIndex = ...
     if event == "DEATHLOG_WA" then
-        allstates[allstatesIndex] = {
+        allstates[name] = {
             show = true,
             changed = true,
             autoHide = true,
             duration = 5,
             expirationTime = GetTime() + 5,
-            playerName = name
+            playerName = name,
+            sortIndex = sortIndex
         }
         return true
     end

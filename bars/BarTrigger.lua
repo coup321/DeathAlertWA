@@ -19,19 +19,10 @@ function (allstates, ...)
         print("len all states before loop: ", lenAllStates)
 
 
-        WeakAuras.ScanEvents("DEATHLOG_WA", playerName, lenAllStates)
-        local i = 0
+        local i = 1
         for _, newState in pairs(newStates) do
+            allstates[i] = newState
             i = i + 1
-            -- for sim purposes
-            if lenAllStates + i == 5 then
-                print("Doing a second name post at len allstates + i: ", lenAllStates + i)
-                WeakAuras.ScanEvents("DEATHLOG_WA", playerName .. 2, lenAllStates + i)
-                i = i + 1
-            end
-
-            -- for sim purposes
-            allstates[i + lenAllStates] = newState
         end
 
         lenAllStates = 0

@@ -1,15 +1,6 @@
 function(a, b)
-    -- id -> MDI
-    -- cloneid
-    -- data table
-    -- active
-    -- dataIndex
-    -- controlPoint
-    -- parent
-    -- dimensions 
-
-    for k,v in pairs(a.region) do
-        print("Region data: ", k, v)
+    if a.region.state.sortIndex and b.region.state.sortIndex then
+        return a.region.state.sortIndex <= b.region.state.sortIndex
     end
-    return a.dataIndex <= b.dataIndex
+    return false
 end
