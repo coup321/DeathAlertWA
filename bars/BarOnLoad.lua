@@ -191,7 +191,7 @@ function StateEmitter:runRecap(player, emitTime)
     end
     -- for simulation
     for i, damageEvent in ipairs(history) do
-        newEvents[player.name .. i] = {
+        newEvents[player.name .. (i + 100)] = {
             show = true,
             changed = true,
             autoHide = true,
@@ -358,6 +358,9 @@ function EventHandler:death(runType, ...)
         elseif runType == "recap" then
             WeakAuras.ScanEvents("DEATHLOG_WA", player.name)
             self.newStates = stateEmitter:runRecap(player, eventTime)
+            -- for simulation of duplicates
+            WeakAuras.ScanEvents("DEATHLOG_WA", player.name .. 2)
+            -- simulation
         end
         player:getDamageHistory():resetHistory()
         return self.newStates
