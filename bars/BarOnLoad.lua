@@ -359,7 +359,7 @@ function EventHandler:death(runType, ...)
             self.newStates = stateEmitter:runRecap(player, eventTime)
         end
         player:getDamageHistory():resetHistory()
-        return self.newStates
+        return self.newStates, player.name
     end
 end
 

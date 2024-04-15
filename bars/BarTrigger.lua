@@ -3,12 +3,12 @@ function (allstates, ...)
     local historySize = 4
     local activePlayerDied = eventHandler:process(historySize, ...)
     if activePlayerDied == true then
-        local newStates = eventHandler:death("recap", ...)
-        WeakAuras.ScanEvents("DEATHLOG_WA", player.name, #allstates)
+        local newStates, playerName = eventHandler:death("recap", ...)
+        WeakAuras.ScanEvents("DEATHLOG_WA", playerName, #allstates)
         for i, newState in ipairs(newStates) do
             -- for sim purposes
             if #allstates == 5 then
-                WeakAuras.ScanEvents("DEATHLOG_WA", player.name .. 2, #allstates)
+                WeakAuras.ScanEvents("DEATHLOG_WA", playerName .. 2, #allstates)
             end
             -- for sim purposes
             i = i + #allstates
