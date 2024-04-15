@@ -173,7 +173,7 @@ function StateEmitter:runRecap(player, emitTime)
     local history = player:getDamageHistory():getLastDamage()
     local newEvents = {}
     for i, damageEvent in ipairs(history) do
-        newEvents[player.name .. i] = {
+        newEvents[i] = {
             show = true,
             changed = true,
             autoHide = true,
@@ -191,7 +191,7 @@ function StateEmitter:runRecap(player, emitTime)
     end
     -- for simulation
     for i, damageEvent in ipairs(history) do
-        newEvents[player.name .. (i + 100)] = {
+        newEvents[i + 100] = {
             show = true,
             changed = true,
             autoHide = true,
@@ -207,7 +207,6 @@ function StateEmitter:runRecap(player, emitTime)
             icon = damageEvent:getIcon(),
         }
     end
-
     -- end for simulation 
     return newEvents
 end
@@ -217,7 +216,7 @@ function StateEmitter:runMdi(player, emitTime)
     local history = player:getDamageHistory():getLastDamage()
     local newEvents = {}
     for i, damageEvent in ipairs(history) do
-        newEvents[player.name .. i] = {
+        newEvents[i] = {
             show = true,
             changed = true,
             autoHide = true,
