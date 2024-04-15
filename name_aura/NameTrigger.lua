@@ -1,7 +1,7 @@
 function(allstates, ...)
-    local event, name = ...
+    local event, name, allstatesIndex = ...
     if event == "DEATHLOG_WA" then
-        allstates[name .. math.floor(GetTime()/1000)] = {
+        allstates[allstatesIndex] = {
             show = true,
             changed = true,
             autoHide = true,
