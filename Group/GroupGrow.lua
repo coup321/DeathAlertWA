@@ -28,7 +28,7 @@ function(newPositions, activeRegions)
         -- if name is shown (1 row)
         -- if MDI string is shown (2 rows)
         -- how many bars are allowed (n rows) - 4 is default
-    local maxNumberOfRows = rowsPerDeath * math.floor(config.maxNumberOfRows / rowsPerDeath)
+    local maxNumberOfRows = rowsPerDeath * config.numberOfDeathsToShow
 
     -- define an MDI index, since it'll need to be used twice 
     -- one time for each MDI string part (1 and 2)
