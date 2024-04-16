@@ -72,7 +72,11 @@ function DamageEvent:getTime()
 end
 
 function DamageEvent:getAmount()
-    return self.amount
+    return string.format("%.1fK", self.amount/1000)
+end
+
+function DamageEvent:getOverkill()
+    return string.format("%.1fK", self.overkill/1000)
 end
 
 function DamageEvent:getIcon()
@@ -187,7 +191,7 @@ function StateEmitter:runRecap(player, emitTime)
             total = 1,
             duration = 5,
             expirationTime = GetTime() + 5,
-            amount = self:formatAmount(damageEvent.amount), -- returns a formatted string
+            amount = damageEvent:getAmount(), -- returns a formatted string
             abilityName = damageEvent.abilityName,
             sourceName = damageEvent.sourceName,
             timeDelta = damageEvent:getTimeDelta(emitTime),
@@ -206,15 +210,12 @@ function StateEmitter:runMdi(player, emitTime)
     local damageEvent = history[#history]
     local unitId = player.unitId
     local abilityName = damageEvent.abilityName
-    local amount = self:formatAmount(damageEvent.amount)
+    local amount = damageEvent:getAmount()
     local sourceName = damageEvent.sourceName
     local icon = damageEvent:getIcon()
-    WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex)
+    local overkill = damageEvent:getOverkill()
+    WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex, overkill)
     self:advanceSortIndex()
-end
-
-function StateEmitter:formatAmount(amount)
-    return string.format("%iK", amount/1000)
 end
 
 function StateEmitter:advanceSortIndex()
