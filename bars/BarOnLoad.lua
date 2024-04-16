@@ -178,6 +178,20 @@ function Player:updateHealth()
     self.health = UnitHealth(self.unitId, true) / UnitHealthMax(self.unitId)
 end
 
+local Config = {}
+Config.__index = Config
+
+function Config:new(config)
+    config = config or aura_env.config  -- Fallback to aura_env.config if no config is provided
+    local instance = setmetatable({}, Config)
+    instance.visibilityDuration = config.visibilityDuration
+    instance.displaySimplePlayerName = config.displaySimplePlayerName
+    instance.displayDeathText = config.displayDeathText
+    instance.displayBars = config.displayBars
+    instance.includeOverkillOnDeathText = config.includeOverkillOnDeathText
+    instance.includeOverkillOnBars = config.includeOverkillOnBars
+    return instance
+end
 -- StateEmitter
 local StateEmitter = {}
 StateEmitter.__index = StateEmitter
@@ -185,18 +199,46 @@ StateEmitter.__index = StateEmitter
 function StateEmitter:new()
     local instance = setmetatable({},StateEmitter)
     instance.sortIndex = 1
+    instance.config = Config:new(aura_env.config)
     return instance
 end
 
-function StateEmitter:runRecap(player, emitTime, visibilityDuration)
+function StateEmitter:run(player, emitTime)
+    local visibilityDuration = self.config.visibilityDuration
+    local displayDeathText = self.config.displayDeathText
+    local displaySimplePlayerName = self.config.displaySimplePlayerName
+    local displayBars = self.config.displayBars
     local history = player:getDamageHistory():getLastDamage()
-    local newEvents = {}
-    self:runMdi(player, visibilityDuration)
-    self:advanceSortIndex()
-    WeakAuras.ScanEvents("DEATHLOG_WA", player.name, self.sortIndex, visibilityDuration)
-    self:advanceSortIndex()
+
+    if displayDeathText then
+        self:runMdi(player, visibilityDuration)
+        self:advanceSortIndex()
+    end
+
+    if displaySimplePlayerName then
+        WeakAuras.ScanEvents("DEATHLOG_WA", player.name, self.sortIndex, visibilityDuration)
+        self:advanceSortIndex()
+    end
+
+    if displayBars then
+        return self:runBars(history, emitTime, visibilityDuration)
+    else
+        return {}
+    end
+end
+
+function StateEmitter:runBars(history, emitTime, visibilityDuration)
+    local newStates = {}
     for i, damageEvent in ipairs(history) do
-        newEvents[self.sortIndex] = {
+
+        local amount
+        if self.config.includeOverkillOnBars then
+            amount = damageEvent:getAmountWithOverkill()
+        else
+            amount = damageEvent:getAmount()
+        end
+
+        newStates[self.sortIndex] = {
             show = true,
             changed = true,
             autoHide = true,
@@ -205,7 +247,7 @@ function StateEmitter:runRecap(player, emitTime, visibilityDuration)
             total = 1,
             duration = visibilityDuration,
             expirationTime = GetTime() + visibilityDuration,
-            amount = damageEvent:getAmountWithOverkill(),
+            amount = amount,
             abilityName = damageEvent.abilityName,
             sourceName = damageEvent.sourceName,
             timeDelta = damageEvent:getTimeDelta(emitTime),
@@ -215,19 +257,25 @@ function StateEmitter:runRecap(player, emitTime, visibilityDuration)
         self:advanceSortIndex()
     end 
     self:advanceSortIndex()
-    return newEvents
+    return newStates
 end
 
-
 function StateEmitter:runMdi(player, visibilityDuration)
-    local history = player:getDamageHistory():getLastDamage()
-    local damageEvent = history[#history]
+
+    local mdiHistory = player:getDamageHistory():getLastDamage()
+    local damageEvent = mdiHistory[#mdiHistory]
+    local overkill
+    if self.config.includeOverkillOnDeathText then
+        overkill = damageEvent:getOverkill()
+    else
+        overkill = ""
+    end
+
     local unitId = player.unitId
     local abilityName = damageEvent.abilityName
     local amount = damageEvent:getAmount()
     local sourceName = damageEvent.sourceName
     local icon = damageEvent:getIcon()
-    local overkill = damageEvent:getOverkill()
     WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex, overkill, visibilityDuration)
     self:advanceSortIndex()
 end
@@ -270,20 +318,6 @@ function Group:getPlayer(GUID)
 end
 
 
-local Config = {}
-Config.__index = Config
-
-function Config:new(config)
-    config = config or aura_env.config  -- Fallback to aura_env.config if no config is provided
-    local instance = setmetatable({}, Config)
-    instance.visibilityDuration = config.visibilityDuration
-    instance.displaySimplePlayerName = config.displaySimplePlayerName
-    instance.displayDeathText = config.displayDeathText
-    instance.displayBars = config.displayBars
-    instance.includeOverkillOnDeathText = config.includeOverkillOnDeathText
-    instance.includeOverkillOnBars = config.includeOverkillOnBars
-    return instance
-end
 
 
 -- EventHandler
@@ -296,7 +330,6 @@ function EventHandler:new()
     instance.playerDied = false
     instance.newStates = {}
     instance.historySize = nil
-    instance.config = Config:new(aura_env.config)
     return instance
 end
 
@@ -360,7 +393,7 @@ function EventHandler:health(...)
     end
 end
 
-function EventHandler:death(runType, ...)
+function EventHandler:death(...)
     local destGUID = select(9, ...)
     local player = self.group:getPlayer(destGUID)
     
@@ -368,14 +401,11 @@ function EventHandler:death(runType, ...)
         self.playerDied = true
         local eventTime = select(2, ...)
         local stateEmitter = StateEmitter:new()
-        if runType == "mdi" then
-            self.newStates = stateEmitter:runMdi(player, self.config.visibilityDuration)
-        elseif runType == "recap" then
-            self.newStates = stateEmitter:runRecap(player, eventTime, self.config.visibilityDuration)
-        end
+        self.newStates = stateEmitter:run(player, eventTime)
         player:getDamageHistory():resetHistory()
-        return self.newStates, player.name
+        return self.newStates
     end
+    return {}
 end
 
 function EventHandler:unitDied()
