@@ -1,5 +1,5 @@
 function()
-    name = aura_env.state.playerName
+    local name = aura_env.state.playerName
     if name then
         return name
     end

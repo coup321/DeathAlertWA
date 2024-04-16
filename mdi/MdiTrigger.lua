@@ -1,5 +1,5 @@
 function(allstates, ...)
-    local _, unitId, abilityName, amount, sourceName, icon, sortIndex = ...
+    local _, unitId, abilityName, amount, sourceName, icon, sortIndex, overkill = ...
     if unitId then
         allstates[unitId .. sortIndex] = {
                 show = true,
@@ -12,7 +12,8 @@ function(allstates, ...)
                 unitId = unitId,
                 abilityName = abilityName,
                 sourceName = sourceName,
-                sortIndex = sortIndex
+                sortIndex = sortIndex,
+                overkill = overkill
             }
         return true
     end
