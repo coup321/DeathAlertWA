@@ -71,12 +71,26 @@ function DamageEvent:getTime()
     return self.time
 end
 
+function DamageEvent:getAmountWithOverkill()
+    if self.overkill > 0 then
+        local amountString = string.format("%.1fk", self.amount/1000)
+        local coloredOverkill = "|cFF757575" .. "(" ..self:getOverkill() .. ")|r"
+ 
+        return amountString .. " " .. coloredOverkill
+    end
+    return string.format("%.1fk", self.amount/1000)
+end
+
 function DamageEvent:getAmount()
-    return string.format("%.1fK", self.amount/1000)
+    return string.format("%.1fk", self.amount/1000)
 end
 
 function DamageEvent:getOverkill()
-    return string.format("%.1fK", self.overkill/1000)
+    if self.overkill > 0 then 
+        return string.format("%.1fk", self.overkill/1000)
+    end
+
+    return "??"
 end
 
 function DamageEvent:getIcon()
@@ -174,12 +188,12 @@ function StateEmitter:new()
     return instance
 end
 
-function StateEmitter:runRecap(player, emitTime)
+function StateEmitter:runRecap(player, emitTime, visibilityDuration)
     local history = player:getDamageHistory():getLastDamage()
     local newEvents = {}
-    self:runMdi(player, nil)
+    self:runMdi(player, visibilityDuration)
     self:advanceSortIndex()
-    WeakAuras.ScanEvents("DEATHLOG_WA", player.name, self.sortIndex)
+    WeakAuras.ScanEvents("DEATHLOG_WA", player.name, self.sortIndex, visibilityDuration)
     self:advanceSortIndex()
     for i, damageEvent in ipairs(history) do
         newEvents[self.sortIndex] = {
@@ -189,9 +203,9 @@ function StateEmitter:runRecap(player, emitTime)
             progressType = "static",
             value = damageEvent.health,
             total = 1,
-            duration = 5,
-            expirationTime = GetTime() + 5,
-            amount = damageEvent:getAmount(), -- returns a formatted string
+            duration = visibilityDuration,
+            expirationTime = GetTime() + visibilityDuration,
+            amount = damageEvent:getAmountWithOverkill(),
             abilityName = damageEvent.abilityName,
             sourceName = damageEvent.sourceName,
             timeDelta = damageEvent:getTimeDelta(emitTime),
@@ -205,7 +219,7 @@ function StateEmitter:runRecap(player, emitTime)
 end
 
 
-function StateEmitter:runMdi(player, emitTime)
+function StateEmitter:runMdi(player, visibilityDuration)
     local history = player:getDamageHistory():getLastDamage()
     local damageEvent = history[#history]
     local unitId = player.unitId
@@ -214,7 +228,7 @@ function StateEmitter:runMdi(player, emitTime)
     local sourceName = damageEvent.sourceName
     local icon = damageEvent:getIcon()
     local overkill = damageEvent:getOverkill()
-    WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex, overkill)
+    WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex, overkill, visibilityDuration)
     self:advanceSortIndex()
 end
 
@@ -255,6 +269,23 @@ function Group:getPlayer(GUID)
     return self.players[GUID]
 end
 
+
+local Config = {}
+Config.__index = Config
+
+function Config:new(config)
+    config = config or aura_env.config  -- Fallback to aura_env.config if no config is provided
+    local instance = setmetatable({}, Config)
+    instance.visibilityDuration = config.visibilityDuration
+    instance.displaySimplePlayerName = config.displaySimplePlayerName
+    instance.displayDeathText = config.displayDeathText
+    instance.displayBars = config.displayBars
+    instance.includeOverkillOnDeathText = config.includeOverkillOnDeathText
+    instance.includeOverkillOnBars = config.includeOverkillOnBars
+    return instance
+end
+
+
 -- EventHandler
 local EventHandler = {}
 EventHandler.__index = EventHandler
@@ -265,6 +296,7 @@ function EventHandler:new()
     instance.playerDied = false
     instance.newStates = {}
     instance.historySize = nil
+    instance.config = Config:new(aura_env.config)
     return instance
 end
 
@@ -337,9 +369,9 @@ function EventHandler:death(runType, ...)
         local eventTime = select(2, ...)
         local stateEmitter = StateEmitter:new()
         if runType == "mdi" then
-            self.newStates = stateEmitter:runMdi(player, eventTime)
+            self.newStates = stateEmitter:runMdi(player, self.config.visibilityDuration)
         elseif runType == "recap" then
-            self.newStates = stateEmitter:runRecap(player, eventTime)
+            self.newStates = stateEmitter:runRecap(player, eventTime, self.config.visibilityDuration)
         end
         player:getDamageHistory():resetHistory()
         return self.newStates, player.name
