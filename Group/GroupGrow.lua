@@ -7,17 +7,6 @@ function(newPositions, activeRegions)
         end
     end
 
-    -- get width of the first half of the MDI style string
-    -- can't guarantee that part 1 will come first, so need to iterate through
-    local mdiP1Width = 0
-    for _, regionData in pairs(activeRegions) do
-        local id = regionData.id
-        if id == "MDI" then
-            mdiP1Width = regionData.dimensions.width
-            break
-        end
-    end
-
     -- calculate rows per player death
     local isNameShown = config.displaySimplePlayerName and 1 or 0
     local isMdiStringShown = config.displayDeathText and 1 or 0
@@ -31,11 +20,16 @@ function(newPositions, activeRegions)
     local maxNumberOfRows = rowsPerDeath * config.numberOfDeathsToShow
 
     local mdiIndex = nil
+    local mdiP1Width = 0
     for i = 1, #activeRegions do 
         local regionData = activeRegions[i]
         local j = #activeRegions > maxNumberOfRows and i - (#activeRegions - maxNumberOfRows) or i
         local width = regionData.dimensions.width / 2
         local id = regionData.id
+
+        if id == "MDI" then
+            mdiP1Width = regionData.dimensions.width
+        end
 
         if id == "MDI2" then
             width = width + mdiP1Width
