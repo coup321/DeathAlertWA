@@ -55,5 +55,7 @@ function(newPositions, activeRegions)
         else
             newPositions[i] = {width, -1*i*25, true}
         end
+
+
     end
 end
