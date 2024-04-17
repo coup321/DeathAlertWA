@@ -1,7 +1,7 @@
 function(allstates, ...)
     local event, unitId, sortIndex, visibilityDuration = ...
     if event == "DEATHLOG_WA" then
-        allstates[unitId] = {
+        allstates[unitId .. sortIndex] = {
             show = true,
             changed = true,
             autoHide = true,

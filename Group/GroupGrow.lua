@@ -47,9 +47,9 @@ function(newPositions, activeRegions)
         local regionData = activeRegions[i]
 
 
-        if i > maxNumberOfRows then -- there are more active auras than allowed rows
-            break
-        end
+        -- if i > maxNumberOfRows then -- there are more active auras than allowed rows
+        --     break
+        -- end
 
         local width = regionData.dimensions.width / 2
         local id = regionData.id
@@ -58,11 +58,11 @@ function(newPositions, activeRegions)
             width = width + mdiP1Width
         end
 
-        if mdiIndex == nil and (id == "MDI2" or id == "MDI") then
+        if id == "MDI" then
             mdiIndex = i + 1
         end
 
-        if id == "MDI" or id == "MDI2" then
+        if id == "MDI" then
             newPositions[i] = {width, -1*mdiIndex*25, true}
         else
             newPositions[i] = {width, -1*i*25, true}
