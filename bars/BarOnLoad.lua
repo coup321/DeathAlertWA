@@ -220,6 +220,7 @@ function Config:new(config, deathCount)
     instance.includeOverkillOnBars = config.includeOverkillOnBars
     instance.numberofDeathstoShow = config.numberofDeathstoShow
     instance.deathCount = deathCount
+    instance.barsPerDeath = 4
     return instance
 end
 
@@ -235,6 +236,29 @@ function Config:sortIndex()
         -- how many bars are allowed (n rows) - 4 is default
     local newSortIndex = rowsPerDeath * self.deathCount
     return newSortIndex
+end
+
+function Config:maxNumberOfRows()
+    local isNameShown = self.displaySimplePlayerName and 1 or 0
+    local isMdiStringShown = self.displayDeathText and 1 or 0
+    local isBarsShown = self.displayBars and 1 or 0
+    local barsPerDeath = 4
+    local rowsPerDeath = barsPerDeath*isBarsShown + 2*isMdiStringShown + isNameShown
+    -- max number of rows must be calculated based on 
+        -- if name is shown (1 row)
+        -- if MDI string is shown (2 rows)
+        -- how many bars are allowed (n rows) - 4 is default
+    local maxNumberOfRows = rowsPerDeath * self.numberOfDeathsToShow
+    return maxNumberOfRows
+end
+
+function Config:rowsPerDeath()
+    local isNameShown = self.displaySimplePlayerName and 1 or 0
+    local isMdiStringShown = self.displayDeathText and 1 or 0
+    local isBarsShown = self.displayBars and 1 or 0
+    local barsPerDeath = 4
+    local rowsPerDeath = barsPerDeath*isBarsShown + 2*isMdiStringShown + isNameShown
+    return rowsPerDeath
 end
 
 -- StateEmitter
@@ -304,8 +328,22 @@ function StateEmitter:runBars(history, emitTime, visibilityDuration)
         }
         self:advanceSortIndex()
     end 
+
+    if #history < self.config.barsPerDeath then
+        -- just emit a few empty strings to fill blank spaces
+        local n = self.config.barsPerDeath - #history
+        self:sendBlanks(n, visibilityDuration)
+    end
+
     self:advanceSortIndex()
     return newStates
+end
+
+function StateEmitter:sendBlanks(n, visibilityDuration)
+    for i = 1, n do
+        WeakAuras.ScanEvents("DEATHLOG_WA", "", self.sortIndex, visibilityDuration)
+        self:advanceSortIndex()
+    end
 end
 
 function StateEmitter:runMdi(player, visibilityDuration)
