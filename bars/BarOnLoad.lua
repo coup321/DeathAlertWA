@@ -49,6 +49,7 @@ function DamageEvent:fromSpell(health, ...)
     )
 end
 
+
 function DamageEvent:fromEnvironmental(health, ...)
 
 
@@ -107,6 +108,13 @@ function DamageEvent:round(num, numDecimalPlaces)
     return math.floor(num * mult + 0.5) / mult
 end
 
+function DamageEvent:sourceNameWithoutServer()
+    local name = self.sourceName:match("^(.-)-")
+    if not name then
+        name = self.sourceName
+    end
+    return name
+end
 
 
 -- DamageHistory
@@ -164,6 +172,10 @@ function Player:new(unitId, historySize)
     return instance
 end
 
+function Player:nameWithoutServer()
+    local name = self.name:match("^(.-)-")
+    return name
+end
 
 function Player:getDamageHistory()
     return self.damageHistory
@@ -274,14 +286,15 @@ function StateEmitter:runMdi(player, visibilityDuration)
     local unitId = player.unitId
     local abilityName = damageEvent.abilityName
     local amount = damageEvent:getAmount()
-    local sourceName = damageEvent.sourceName
+    local sourceName = damageEvent:sourceNameWithoutServer()
     local icon = damageEvent:getIcon()
     WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex, overkill, visibilityDuration)
     self:advanceSortIndex()
 end
 
-function StateEmitter:advanceSortIndex()
-    self.sortIndex = self.sortIndex + 1
+function StateEmitter:advanceSortIndex(n)
+    n = n and n or 1
+    self.sortIndex = self.sortIndex + n
 end
 
 
