@@ -209,7 +209,7 @@ end
 local Config = {}
 Config.__index = Config
 
-function Config:new(config)
+function Config:new(config, deathCount)
     config = config or aura_env.config  -- Fallback to aura_env.config if no config is provided
     local instance = setmetatable({}, Config)
     instance.visibilityDuration = config.visibilityDuration
@@ -218,20 +218,39 @@ function Config:new(config)
     instance.displayBars = config.displayBars
     instance.includeOverkillOnDeathText = config.includeOverkillOnDeathText
     instance.includeOverkillOnBars = config.includeOverkillOnBars
+    instance.numberofDeathstoShow = config.numberofDeathstoShow
+    instance.deathCount = deathCount
     return instance
 end
+
+function Config:sortIndex()
+    local isNameShown = self.displaySimplePlayerName and 1 or 0
+    local isMdiStringShown = self.displayDeathText and 1 or 0
+    local isBarsShown = self.displayBars and 1 or 0
+    local barsPerDeath = 4
+    local rowsPerDeath = barsPerDeath*isBarsShown + 2*isMdiStringShown + isNameShown
+    -- max number of rows must be calculated based on 
+        -- if name is shown (1 row)
+        -- if MDI string is shown (2 rows)
+        -- how many bars are allowed (n rows) - 4 is default
+    local newSortIndex = rowsPerDeath * self.deathCount
+    return newSortIndex
+end
+
 -- StateEmitter
 local StateEmitter = {}
 StateEmitter.__index = StateEmitter
 
-function StateEmitter:new()
+function StateEmitter:new(deathCount)
     local instance = setmetatable({},StateEmitter)
-    instance.sortIndex = 1
-    instance.config = Config:new(aura_env.config)
+    instance.sortIndex = nil
+    instance.config = Config:new(aura_env.config, deathCount)
     return instance
 end
 
 function StateEmitter:run(player, emitTime)
+    self.sortIndex = self.config:sortIndex()
+    print("starting sort index: ", self.sortIndex)
     local visibilityDuration = self.config.visibilityDuration
     local displayDeathText = self.config.displayDeathText
     local displaySimplePlayerName = self.config.displaySimplePlayerName
@@ -242,14 +261,19 @@ function StateEmitter:run(player, emitTime)
         self:runMdi(player, visibilityDuration)
         self:advanceSortIndex()
     end
+    print("after mdi sort index: ", self.sortIndex)
 
     if displaySimplePlayerName then
         WeakAuras.ScanEvents("DEATHLOG_WA", player.unitId, self.sortIndex, visibilityDuration)
         self:advanceSortIndex()
     end
 
+    print("after name sort index: ", self.sortIndex)
     if displayBars then
-        return self:runBars(history, emitTime, visibilityDuration)
+        local newStates =  self:runBars(history, emitTime, visibilityDuration)
+        print("after runbars sort index: ", self.sortIndex)
+        return newStates
+
     else
         return {}
     end
@@ -315,6 +339,8 @@ function StateEmitter:advanceSortIndex(n)
 end
 
 
+
+
 -- Group
 local Group = {}
 Group.__index = Group
@@ -360,6 +386,7 @@ function EventHandler:new()
     instance.playerDied = false
     instance.newStates = {}
     instance.historySize = nil
+    instance.deathCount = 0
     return instance
 end
 
@@ -430,9 +457,10 @@ function EventHandler:death(...)
     if player then
         self.playerDied = true
         local eventTime = select(2, ...)
-        local stateEmitter = StateEmitter:new()
+        local stateEmitter = StateEmitter:new(self.deathCount)
         self.newStates = stateEmitter:run(player, eventTime)
         player:getDamageHistory():resetHistory()
+        self.deathCount = self.deathCount + 1
         return self.newStates
     end
     return {}

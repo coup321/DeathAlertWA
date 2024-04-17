@@ -5,10 +5,8 @@ function (allstates, ...)
     if activePlayerDied == true then
         local newStates = eventHandler:death(...)
 
-        local i = 1
-        for _, newState in pairs(newStates) do
+        for i, newState in pairs(newStates) do
             allstates[i] = newState
-            i = i + 1
         end
 
         return true
