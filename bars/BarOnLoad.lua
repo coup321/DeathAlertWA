@@ -228,7 +228,7 @@ function StateEmitter:run(player, emitTime)
     end
 
     if displaySimplePlayerName then
-        WeakAuras.ScanEvents("DEATHLOG_WA", player.name, self.sortIndex, visibilityDuration)
+        WeakAuras.ScanEvents("DEATHLOG_WA", player.unitId, self.sortIndex, visibilityDuration)
         self:advanceSortIndex()
     end
 
