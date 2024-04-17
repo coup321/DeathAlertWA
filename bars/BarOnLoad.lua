@@ -250,7 +250,6 @@ end
 
 function StateEmitter:run(player, emitTime)
     self.sortIndex = self.config:sortIndex()
-    print("starting sort index: ", self.sortIndex)
     local visibilityDuration = self.config.visibilityDuration
     local displayDeathText = self.config.displayDeathText
     local displaySimplePlayerName = self.config.displaySimplePlayerName
@@ -261,17 +260,14 @@ function StateEmitter:run(player, emitTime)
         self:runMdi(player, visibilityDuration)
         self:advanceSortIndex()
     end
-    print("after mdi sort index: ", self.sortIndex)
 
     if displaySimplePlayerName then
         WeakAuras.ScanEvents("DEATHLOG_WA", player.unitId, self.sortIndex, visibilityDuration)
         self:advanceSortIndex()
     end
 
-    print("after name sort index: ", self.sortIndex)
     if displayBars then
         local newStates =  self:runBars(history, emitTime, visibilityDuration)
-        print("after runbars sort index: ", self.sortIndex)
         return newStates
 
     else

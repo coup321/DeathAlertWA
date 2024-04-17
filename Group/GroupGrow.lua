@@ -30,27 +30,10 @@ function(newPositions, activeRegions)
         -- how many bars are allowed (n rows) - 4 is default
     local maxNumberOfRows = rowsPerDeath * config.numberOfDeathsToShow
 
-    -- define an MDI index, since it'll need to be used twice 
-    -- one time for each MDI string part (1 and 2)
     local mdiIndex = nil
-
-    -- start at 1 if there are enough rows for all the auras
-    -- otherwise start at number of auras minus max number of auras
-    local start = 1
-    local stop = #activeRegions
-    local condition = start - stop > 0
-    for i = condition and start - stop or start, stop do
-        if activeRegions[i] == nil then
-            break
-        end
-
+    for i = 1, #activeRegions do 
         local regionData = activeRegions[i]
-
-
-        -- if i > maxNumberOfRows then -- there are more active auras than allowed rows
-        --     break
-        -- end
-
+        local j = #activeRegions > maxNumberOfRows and i - (#activeRegions - maxNumberOfRows) or i
         local width = regionData.dimensions.width / 2
         local id = regionData.id
 
@@ -58,16 +41,13 @@ function(newPositions, activeRegions)
             width = width + mdiP1Width
         end
 
-        if id == "MDI" then
-            mdiIndex = i + 1
-        end
+        local show = i > #activeRegions - maxNumberOfRows
 
         if id == "MDI" then
-            newPositions[i] = {width, -1*mdiIndex*25, true}
+            mdiIndex = j + 1
+            newPositions[i] = {width, -1*mdiIndex*25, show}
         else
-            newPositions[i] = {width, -1*i*25, true}
+            newPositions[i] = {width, -1*j*25, show}
         end
-
-
     end
 end
