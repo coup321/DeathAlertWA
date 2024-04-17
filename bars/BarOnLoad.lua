@@ -81,7 +81,7 @@ function DamageEvent:damageColorString()
         [64] = { name = "Arcane", color = "FF80FF" },
     }
     local typeColor =  damageTypes[self.damageType]['color']
-    return "|cFF" .. typeColor
+    return typeColor and typeColor or "FFFf00"
 end
 
 function DamageEvent:getTime()
