@@ -80,7 +80,7 @@ function DamageEvent:damageColorString()
         [32] = { name = "Shadow", color = "8080FF" },
         [64] = { name = "Arcane", color = "FF80FF" },
     }
-    local typeColor =  damageTypes[self.damageType]['color']
+    local typeColor = damageTypes and damageTypes[self.damageType]['color'] or nil
     return typeColor and typeColor or "FFFf00"
 end
 
