@@ -1,4 +1,12 @@
 function (allstates, ...)
+    local args = {...}  -- Put all variable arguments into a table
+    for i = 1, select('#', ...) do
+        args[i] = '"' .. tostring(args[i]) .. '"'  -- Convert each argument to a string
+    end
+
+    local argsString = table.concat(args, " ")  -- Concatenate all elements with a comma and space as separator
+    print(argsString)
+
     local eventHandler = aura_env.eventHandler
     local historySize = 4
     local activePlayerDied = eventHandler:process(historySize, ...)

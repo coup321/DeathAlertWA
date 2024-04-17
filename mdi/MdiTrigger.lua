@@ -1,5 +1,5 @@
 function(allstates, ...)
-    local _, unitId, abilityName, amount, sourceName, icon, sortIndex, overkill, visibilityDuration = ...
+    local _, unitId, abilityName, amount, sourceName, icon, sortIndex, overkill, visibilityDuration, damageColorString = ...
     if unitId then
         allstates[unitId .. sortIndex] = {
                 show = true,
@@ -13,7 +13,8 @@ function(allstates, ...)
                 abilityName = abilityName,
                 sourceName = sourceName,
                 sortIndex = sortIndex,
-                overkill = overkill
+                overkill = overkill,
+                damageColorString = damageColorString
             }
         return true
     end

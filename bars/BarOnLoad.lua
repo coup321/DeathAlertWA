@@ -2,7 +2,7 @@
 local DamageEvent = {}
 DamageEvent.__index = DamageEvent
 
-function DamageEvent:new(type, time, sourceName, abilityName, amount, overkill, icon, health)
+function DamageEvent:new(type, time, sourceName, abilityName, amount, damageType, overkill, icon, health)
     local instance = setmetatable({}, DamageEvent)
     instance.type = type
     instance.time = time
@@ -10,6 +10,7 @@ function DamageEvent:new(type, time, sourceName, abilityName, amount, overkill, 
     instance.sourceName = sourceName
     instance.abilityName = abilityName
     instance.amount = amount
+    instance.damageType = damageType
     instance.overkill = overkill
     instance.icon = icon
     return instance
@@ -17,9 +18,7 @@ end
 
 
 function DamageEvent:fromSwing(health, ...)
-
-
-    local _, time, _, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, amount, overkill = ...
+    local _, time, _, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, amount, overkill, damageType = ...
 
     local _, _, iconFileId = GetSpellInfo(260421)
     return DamageEvent:new(
@@ -28,6 +27,7 @@ function DamageEvent:fromSwing(health, ...)
         sourceName,
         "Melee",
         amount,
+        damageType,
         overkill,
         iconFileId,
         health
@@ -35,7 +35,7 @@ function DamageEvent:fromSwing(health, ...)
 end
 
 function DamageEvent:fromSpell(health, ...)
-    local _, time, subEvent, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, spellId, spellName, spellSchool, amount, overkill = ...
+    local _, time, subEvent, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, spellId, spellName, damageType, amount, overkill  = ...
     local _, _, iconFileId = GetSpellInfo(spellId)
     return DamageEvent:new(
         "SPELL_DAMAGE",
@@ -43,6 +43,7 @@ function DamageEvent:fromSpell(health, ...)
         sourceName,
         spellName,
         amount,
+        damageType,
         overkill,
         iconFileId,
         health
@@ -53,7 +54,7 @@ end
 function DamageEvent:fromEnvironmental(health, ...)
 
 
-    local _, time, _, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, amount, overkill = ...
+    local _, time, _, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, amount, overkill, damageType = ...
 
     local _, _, iconFileId = GetSpellInfo(294480)
     return DamageEvent:new(
@@ -62,10 +63,25 @@ function DamageEvent:fromEnvironmental(health, ...)
         sourceName,
         "Environment",
         amount,
+        damageType,
         overkill,
         iconFileId,
         health
     )
+end
+
+function DamageEvent:damageColorString()
+    local damageTypes = {
+        [1] = { name = "Physical", color = "FFFf00" },
+        [2] = { name = "Holy", color = "FFE680" },
+        [4] = { name = "Fire", color = "FF8000" },
+        [8] = { name = "Nature", color = "4DFF4D" },
+        [16] = { name = "Frost", color = "80FFFF" },
+        [32] = { name = "Shadow", color = "8080FF" },
+        [64] = { name = "Arcane", color = "FF80FF" },
+    }
+    local typeColor =  damageTypes[self.damageType]['color']
+    return "|cFF" .. typeColor
 end
 
 function DamageEvent:getTime()
@@ -288,7 +304,8 @@ function StateEmitter:runMdi(player, visibilityDuration)
     local amount = damageEvent:getAmount()
     local sourceName = damageEvent:sourceNameWithoutServer()
     local icon = damageEvent:getIcon()
-    WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex, overkill, visibilityDuration)
+    local damageColorString = damageEvent:damageColorString()
+    WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex, overkill, visibilityDuration, damageColorString)
     self:advanceSortIndex()
 end
 
