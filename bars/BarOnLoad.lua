@@ -440,7 +440,7 @@ function EventHandler:process(historySize, ...)
         self.group = Group:update(historySize)
     end
     
-    if subEvent == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
+    if event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
         print("Updating group, subevent and event are: ", subEvent, event)
         self:roster(historySize)
         
