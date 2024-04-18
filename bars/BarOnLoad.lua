@@ -401,10 +401,13 @@ function Group:addPlayer(unitId, historySize)
 end
 
 function Group:update(historySize)
-    self.players = {}
+    if not self.players then
+        self.players = {}
+    end
+
     for unitId in WA_IterateGroupMembers() do
         local name = UnitName(unitId)
-        if self.players[name] 
+        if self.players[name] then
             print(string.format("%s is already in the Group object", name))
         else
             print("added: " .. name)
