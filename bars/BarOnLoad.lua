@@ -404,8 +404,12 @@ function Group:update(historySize)
     self.players = {}
     for unitId in WA_IterateGroupMembers() do
         local name = UnitName(unitId)
-        print("added: " .. name)
-        self:addPlayer(unitId, historySize)
+        if self.players[name] 
+            print(string.format("%s is already in the Group object", name))
+        else
+            print("added: " .. name)
+            self:addPlayer(unitId, historySize)
+        end
     end
     return self
 end
