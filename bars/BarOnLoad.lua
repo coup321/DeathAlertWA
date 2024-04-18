@@ -80,7 +80,7 @@ function DamageEvent:damageColorString()
         [32] = { name = "Shadow", color = "8080FF" },
         [64] = { name = "Arcane", color = "FF80FF" },
     }
-    local typeColor = damageTypes and damageTypes[self.damageType]['color'] or nil
+    local typeColor = self.damageType and damageTypes[self.damageType]['color'] or nil
     return typeColor and typeColor or "FFFf00"
 end
 
@@ -131,6 +131,7 @@ function DamageEvent:sourceNameWithoutServer()
     end
     return name
 end
+
 
 
 -- DamageHistory
@@ -321,7 +322,7 @@ function StateEmitter:runBars(history, emitTime, visibilityDuration)
             expirationTime = GetTime() + visibilityDuration,
             amount = amount,
             abilityName = damageEvent.abilityName,
-            sourceName = damageEvent.sourceName,
+            sourceName = damageEvent:sourceNameWithoutServer(),
             timeDelta = damageEvent:getTimeDelta(emitTime),
             icon = damageEvent:getIcon(),
             sortIndex = self.sortIndex
@@ -439,7 +440,8 @@ function EventHandler:process(historySize, ...)
         self.group = Group:update(historySize)
     end
     
-    if subEvent == "GROUP_ROSTER_UPDATE" then
+    if subEvent == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
+        print("Updating group, subevent and event are: ", subEvent, event)
         self:roster(historySize)
         
     elseif  event == "UNIT_HEALTH" then
