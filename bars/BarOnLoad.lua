@@ -349,9 +349,15 @@ end
 
 function StateEmitter:runMdi(player, visibilityDuration)
 
-    local mdiHistory = player:getDamageHistory():getLastDamage()
-    local damageEvent = mdiHistory[#mdiHistory]
+    local history = player:getDamageHistory():getLastDamage()
+    local damageEvent = history[#history]
     local overkill
+    if damageEvent == nil then
+        print("DamageEvent is nil, expected DamageEvent Object")
+        print("mdiHistory: ", history)
+        print("#mdiHistory: ", #history)
+        print("damageEvent: ", damageEvent)
+    end
     if self.config.includeOverkillOnDeathText then
         overkill = damageEvent:getOverkill()
     else
