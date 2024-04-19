@@ -486,6 +486,7 @@ function EventHandler:damage(...)
         local destGUID = select(9, ...)
         local player = self.group:getPlayer(destGUID)
         if player then
+            player:updateHealth()
             player:getDamageHistory():addDamage(player.health, ...)
         end
 end
