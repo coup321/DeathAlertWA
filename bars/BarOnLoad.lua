@@ -225,7 +225,8 @@ function Config:new(config, deathCount)
     instance.includeOverkillOnBars = config.includeOverkillOnBars
     instance.numberofDeathstoShow = config.numberofDeathstoShow
     instance.deathCount = deathCount
-    instance.barsPerDeath = 4
+    instance.addRowBetweenBars = 1
+    instance.barsPerDeath = config.historySize + instance.addRowBetweenBars
     return instance
 end
 
@@ -233,7 +234,7 @@ function Config:sortIndex()
     local isNameShown = self.displaySimplePlayerName and 1 or 0
     local isMdiStringShown = self.displayDeathText and 1 or 0
     local isBarsShown = self.displayBars and 1 or 0
-    local barsPerDeath = 4
+    local barsPerDeath = self.barsPerDeath
     local rowsPerDeath = barsPerDeath*isBarsShown + 2*isMdiStringShown + isNameShown
     -- max number of rows must be calculated based on 
         -- if name is shown (1 row)
@@ -247,7 +248,7 @@ function Config:maxNumberOfRows()
     local isNameShown = self.displaySimplePlayerName and 1 or 0
     local isMdiStringShown = self.displayDeathText and 1 or 0
     local isBarsShown = self.displayBars and 1 or 0
-    local barsPerDeath = 4
+    local barsPerDeath = self.barsPerDeath
     local rowsPerDeath = barsPerDeath*isBarsShown + 2*isMdiStringShown + isNameShown
     -- max number of rows must be calculated based on 
         -- if name is shown (1 row)
@@ -261,7 +262,7 @@ function Config:rowsPerDeath()
     local isNameShown = self.displaySimplePlayerName and 1 or 0
     local isMdiStringShown = self.displayDeathText and 1 or 0
     local isBarsShown = self.displayBars and 1 or 0
-    local barsPerDeath = 4
+    local barsPerDeath = self.barsPerDeath
     local rowsPerDeath = barsPerDeath*isBarsShown + 2*isMdiStringShown + isNameShown
     return rowsPerDeath
 end
@@ -338,12 +339,12 @@ function StateEmitter:runBars(history, emitTime, visibilityDuration)
         self:advanceSortIndex()
     end 
 
-    if #history <= self.config.barsPerDeath then
+    if #history < self.config.barsPerDeath then
         -- just emit a few empty strings to fill blank spaces
         local n = self.config.barsPerDeath - #history
         self:sendBlanks(n, visibilityDuration)
     end
-
+    -- send one blank for every set of bars so that there is space after them
     self:advanceSortIndex()
     return newStates
 end
