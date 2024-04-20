@@ -8,7 +8,7 @@ function()
         local damageColorString = aura_env.state.damageColorString
         local coloredAbilityName = "|cFF" .. damageColorString .. abilityName .. "|r"
         local coloredAmount = "|cFF".. damageColorString .. amount .. "|r"
-        return coloredAbilityName .. " from " .. sourceName .. " for " .. coloredAmount .. " (" .. overkill .. " overkill)"
+        return coloredAbilityName .. " from " .. sourceName .. " for " .. coloredAmount .. overkill
 
     end 
 end

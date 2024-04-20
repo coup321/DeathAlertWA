@@ -104,10 +104,10 @@ end
 
 function DamageEvent:getOverkill()
     if self.overkill > 0 then 
-        return string.format("%.1fk", self.overkill/1000)
+        return " (" .. string.format("%.1fk", self.overkill/1000).." overkill)"
     end
 
-    return "??"
+    return "(?? overkill)"
 end
 
 function DamageEvent:getIcon()
@@ -458,7 +458,6 @@ function EventHandler:process(historySize, ...)
     end
     
     if event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
-        print("Updating group, subevent and event are: ", subEvent, event)
         self:roster(historySize)
         
     elseif  event == "UNIT_HEALTH" then
