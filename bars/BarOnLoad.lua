@@ -352,12 +352,6 @@ function StateEmitter:runMdi(player, visibilityDuration)
     local history = player:getDamageHistory():getLastDamage()
     local damageEvent = history[#history]
     local overkill
-    if damageEvent == nil then
-        print("DamageEvent is nil, expected DamageEvent Object")
-        print("mdiHistory: ", history)
-        print("#mdiHistory: ", #history)
-        print("damageEvent: ", damageEvent)
-    end
     if self.config.includeOverkillOnDeathText then
         overkill = damageEvent:getOverkill()
     else
@@ -407,7 +401,8 @@ function Group:update(historySize)
 
     for unitId in WA_IterateGroupMembers() do
         local name = UnitName(unitId)
-        if self.players[name] then
+        local playerGUID = UnitGUID(unitId)
+        if self.players[playerGUID] then
             print(string.format("%s is already in the Group object", name))
         else
             print("added: " .. name)
