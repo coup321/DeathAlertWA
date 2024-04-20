@@ -14,7 +14,8 @@ function(newPositions, activeRegions)
     local isMdiStringShown = config.displayDeathText and 1 or 0
     local isBarsShown = config.displayBars and 1 or 0
     local barsPerDeath = config.historySize
-    local rowsPerDeath = barsPerDeath*isBarsShown + 2*isMdiStringShown + isNameShown
+    local addRowBetweenBars = 1
+    local rowsPerDeath = (barsPerDeath+addRowBetweenBars)*isBarsShown + 2*isMdiStringShown + isNameShown
     -- max number of rows must be calculated based on 
         -- if name is shown (1 row)
         -- if MDI string is shown (2 rows)
