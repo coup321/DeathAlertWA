@@ -204,7 +204,11 @@ end
 
 
 function Player:updateHealth()
-    self.health = UnitHealth(self.unitId, true) / UnitHealthMax(self.unitId)
+    if aura_env.config.includeHpParsing then
+        self.health = UnitHealth(self.unitId, true) / UnitHealthMax(self.unitId)
+    else
+        self.health = 0
+    end
 end
 
 function Player:updateUnitId(unitId)
@@ -460,9 +464,6 @@ function EventHandler:process(historySize, ...)
     if event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
         self:roster(historySize)
         
-    elseif  event == "UNIT_HEALTH" then
-        self:health(...)
-
     elseif  subEvent == "UNIT_DIED" then
         return self:activePlayerDied(...)
 
@@ -493,15 +494,6 @@ function EventHandler:damage(...)
             player:updateHealth()
             player:getDamageHistory():addDamage(player.health, ...)
         end
-end
-
-function EventHandler:health(...)
-    local _, unitId = ...
-    local unitGUID = UnitGUID(unitId)
-    local player = self.group:getPlayer(unitGUID)
-    if player then
-        player:updateHealth()
-    end
 end
 
 function EventHandler:death(...)
