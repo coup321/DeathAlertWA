@@ -225,7 +225,7 @@ function Config:new(config, deathCount)
     instance.includeOverkillOnBars = config.includeOverkillOnBars
     instance.numberofDeathstoShow = config.numberofDeathstoShow
     instance.deathCount = deathCount
-    instance.addRowBetweenBars = 1
+    instance.addRowBetweenBars = config.addRowBetweenBars and 1 or 0
     instance.barsPerDeath = config.historySize + instance.addRowBetweenBars
     return instance
 end
