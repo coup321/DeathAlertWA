@@ -1,5 +1,20 @@
 {
     "Lua.diagnostics.globals": [
-        "show"
+        "show",
+        "GetTime",
+        "pairs",
+        "print",
+        "select",
+        "table",
+        "tostring",
+        "string",
+        "setmetatable",
+        "GetSpellInfo",
+        "UnitHealth",
+        "UnitHealthMax",
+        "UnitName",
+        "UnitGUID",
+        "ipairs",
+        "math"
     ]
 }
