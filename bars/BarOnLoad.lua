@@ -412,11 +412,9 @@ function Group:update(historySize)
         local playerGUID = UnitGUID(unitId)
         local player = self.players[playerGUID]
         if player then
-            print(string.format("%s is already in the Group object", name))
             player:updateUnitId(unitId)
             
         else
-            print("added: " .. name)
             self:addPlayer(unitId, historySize)
         end
     end
