@@ -207,6 +207,10 @@ function Player:updateHealth()
     self.health = UnitHealth(self.unitId, true) / UnitHealthMax(self.unitId)
 end
 
+function Player:updateUnitId(unitId)
+    self.unitId = unitId
+end
+
 local Config = {}
 Config.__index = Config
 
@@ -398,12 +402,14 @@ function Group:update(historySize)
     if not self.players then
         self.players = {}
     end
-
     for unitId in WA_IterateGroupMembers() do
         local name = UnitName(unitId)
         local playerGUID = UnitGUID(unitId)
-        if self.players[playerGUID] then
+        local player = self.players[playerGUID]
+        if player then
             print(string.format("%s is already in the Group object", name))
+            player:updateUnitId(unitId)
+            
         else
             print("added: " .. name)
             self:addPlayer(unitId, historySize)
@@ -462,6 +468,7 @@ function EventHandler:process(historySize, ...)
     elseif damageEvents[subEvent] then
         self:damage(...)
     end
+    return false
 end
 
 function EventHandler:activePlayerDied(...)
