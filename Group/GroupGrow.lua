@@ -25,12 +25,12 @@ function(newPositions, activeRegions)
 
     local mdiIndex = nil
     local mdiP1Width = 0
-    local offset = -1
+    local offset = 1 -- must start at one otherwise it will add extra rows after MDI text before intended
     local isReset = false
     for i = 1, #activeRegions do
         local regionData = activeRegions[i]
         local j = #activeRegions > maxNumberOfRows and i - (#activeRegions - maxNumberOfRows) or i
-        j = j + math.floor((j-1)/rowsPerDeath)
+        -- if bars are shown then create a space below each death log
         local width = regionData.dimensions.width / 2
         local id = regionData.id
 
@@ -53,12 +53,16 @@ function(newPositions, activeRegions)
         -- if it's not the first MDI item, then it also needs offset added to it
         -- iterate offset down one
         if id == "MDI2" then
-            mdiIndex = j - 1 + offset
-            offset = offset - 1
-            newPositions[i] = {width, -1*mdiIndex*height, show}
+            mdiIndex = j - offset - 1
+            offset = offset + 1
+            local x = width
+            local y = -mdiIndex*height
+            newPositions[i] = {x, y, show}
         else
-            j = j + offset
-            newPositions[i] = {width, -1*j*height, show}
+            j = j - offset
+            local x = width
+            local y = -j*height
+            newPositions[i] = {x, y, show}
         end
     end
 end
