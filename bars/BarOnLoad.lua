@@ -338,7 +338,7 @@ function StateEmitter:runBars(history, emitTime, visibilityDuration)
         self:advanceSortIndex()
     end 
 
-    if #history < self.config.barsPerDeath then
+    if #history <= self.config.barsPerDeath then
         -- just emit a few empty strings to fill blank spaces
         local n = self.config.barsPerDeath - #history
         self:sendBlanks(n, visibilityDuration)
