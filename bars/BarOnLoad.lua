@@ -284,6 +284,10 @@ function StateEmitter:run(player, emitTime)
     local displaySimplePlayerName = self.config.displaySimplePlayerName
     local displayBars = self.config.displayBars
     local history = player:getDamageHistory():getLastDamage()
+    -- handle the infrequent case when a death event is sent, but no damage events have occured
+    if #history == 0 then
+        return {}
+    end
 
     if displayDeathText then
         self:runMdi(player, visibilityDuration)
