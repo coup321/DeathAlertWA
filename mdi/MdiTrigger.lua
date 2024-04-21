@@ -1,5 +1,6 @@
 function(allstates, ...)
-    local _, unitId, abilityName, amount, sourceName, icon, sortIndex, overkill, visibilityDuration, damageColorString = ...
+    local _, unitId, abilityName, amount, sourceName, icon, sortIndex, overkill, visibilityDuration, damageColorString, name = ...
+    local auraName = "MDI"
     if unitId then
         allstates[unitId .. sortIndex] = {
                 show = true,
@@ -14,7 +15,9 @@ function(allstates, ...)
                 sourceName = sourceName,
                 sortIndex = sortIndex,
                 overkill = overkill,
-                damageColorString = damageColorString
+                damageColorString = damageColorString,
+                tag = auraName,
+                name = name
             }
         return true
     end

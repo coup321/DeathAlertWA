@@ -8,7 +8,8 @@ function(allstates, ...)
             duration = visibilityDuration,
             expirationTime = GetTime() + visibilityDuration,
             unitId = unitId,
-            sortIndex = sortIndex
+            sortIndex = sortIndex,
+            tag = "Name"
         }
         return true
     end

@@ -222,6 +222,7 @@ function Config:new(config, deathCount)
     instance.visibilityDuration = config.visibilityDuration
     instance.displaySimplePlayerName = config.displaySimplePlayerName
     instance.displayDeathText = config.displayDeathText
+    instance.displayDeathTextSeparately = config.displayDeathTextSeparately
     instance.displayBars = config.displayBars
     instance.includeOverkillOnDeathText = config.includeOverkillOnDeathText
     instance.includeOverkillOnBars = config.includeOverkillOnBars
@@ -284,6 +285,7 @@ function StateEmitter:run(player, emitTime)
     self.sortIndex = self.config:sortIndex()
     local visibilityDuration = self.config.visibilityDuration
     local displayDeathText = self.config.displayDeathText
+    local displayDeathTextSeparately = self.config.displayDeathTextSeparately
     local displaySimplePlayerName = self.config.displaySimplePlayerName
     local displayBars = self.config.displayBars
     local history = player:getDamageHistory():getLastDamage()
@@ -293,8 +295,13 @@ function StateEmitter:run(player, emitTime)
     end
 
     if displayDeathText then
-        self:runMdi(player, visibilityDuration)
+        self:runMdi(player, visibilityDuration, "WITH_BARS")
         self:advanceSortIndex()
+    end
+
+
+    if displayDeathTextSeparately then
+        self:runMdi(player, visibilityDuration, "SEPARATE")
     end
 
     if displaySimplePlayerName then
@@ -336,7 +343,8 @@ function StateEmitter:runBars(history, emitTime, visibilityDuration)
             sourceName = damageEvent:sourceNameWithoutServer(),
             timeDelta = damageEvent:getTimeDelta(emitTime),
             icon = damageEvent:getIcon(),
-            sortIndex = self.sortIndex
+            sortIndex = self.sortIndex,
+            tag = "Bars"
         }
         self:advanceSortIndex()
     end 
@@ -358,7 +366,7 @@ function StateEmitter:sendBlanks(n, visibilityDuration)
     end
 end
 
-function StateEmitter:runMdi(player, visibilityDuration)
+function StateEmitter:runMdi(player, visibilityDuration, whichMdi)
 
     local history = player:getDamageHistory():getLastDamage()
     local damageEvent = history[#history]
@@ -375,8 +383,7 @@ function StateEmitter:runMdi(player, visibilityDuration)
     local sourceName = damageEvent:sourceNameWithoutServer()
     local icon = damageEvent:getIcon()
     local damageColorString = damageEvent:damageColorString()
-    WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT", unitId, abilityName, amount, sourceName, icon, self.sortIndex, overkill, visibilityDuration, damageColorString)
-    self:advanceSortIndex()
+    WeakAuras.ScanEvents("DEATHLOG_WA_MDITEXT_"..whichMdi, unitId, abilityName, amount, sourceName, icon, self.sortIndex, overkill, visibilityDuration, damageColorString, player.name)
 end
 
 function StateEmitter:advanceSortIndex(n)
