@@ -517,6 +517,10 @@ function EventHandler:death(eventTime, destGUID)
     local player = self.group:getPlayer(destGUID)
     
     if player then
+        if aura_env.playerOnly and player.unitId ~= "player" then
+            return {}
+        end
+
         self.playerDied = true
         local stateEmitter = StateEmitter:new(self.deathCount)
         self.newStates = stateEmitter:run(player, eventTime)
