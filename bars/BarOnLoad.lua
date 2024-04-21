@@ -493,7 +493,8 @@ function EventHandler:activePlayerDied(...)
     local destGUID = select(9, ...)
     local player = self.group:getPlayer(destGUID)
     if player then
-        return true
+        local isFeignDeath = UnitIsFeignDeath(player.unitId)
+        return isFeignDeath and false or true
     end
     return false
 end
