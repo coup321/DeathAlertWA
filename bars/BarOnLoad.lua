@@ -492,11 +492,17 @@ end
 function EventHandler:activePlayerDied(...)
     local destGUID = select(9, ...)
     local player = self.group:getPlayer(destGUID)
-    if player then
-        local isFeignDeath = UnitIsFeignDeath(player.unitId)
-        return isFeignDeath and false or true
+    if player and UnitIsFeignDeath(player.unitId) ~= true then
+        local eventTime = select(2, ...)
+        self:updatePlayerDiedStateTrue(eventTime, destGUID)
     end
-    return false
+end
+
+function EventHandler:updatePlayerDiedStateTrue(eventTime, playerGUID)
+    C_Timer.After(0.05, function()
+        WeakAuras.ScanEvents("DEATHLOG_WA_PLAYERDIED", eventTime, playerGUID)
+    end
+    )
 end
 
 function EventHandler:roster(historySize)
