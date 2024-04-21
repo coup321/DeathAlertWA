@@ -26,7 +26,7 @@ function(newPositions, activeRegions)
 
     local mdiIndex = nil
     local mdiP1Width = 0
-    local offset = -1
+    local offset = 0
     local isReset = false
     for i = 1, #activeRegions do
         local regionData = activeRegions[i]

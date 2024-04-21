@@ -1,10 +1,10 @@
 function(a, b)
     -- guarentees that MDI comes before MDI2 for the grow function
 
-    local mdiCondition =  a.region.id == "MDI2" and b.region.id == "MDI1"
+    local mdiCondition =  a.region.id == "MDI2" and b.region.id == "MDI"
     local sortIndexCondition = a.region.state.sortIndex == b.region.state.sortIndex
     if mdiCondition and sortIndexCondition then
-        return true
+        return false
     end
 
     local a = a.region.state.sortIndex
