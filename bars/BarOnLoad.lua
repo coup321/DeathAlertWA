@@ -54,14 +54,14 @@ end
 function DamageEvent:fromEnvironmental(health, ...)
 
 
-    local _, time, _, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, amount, overkill, damageType = ...
+    local _, time, subEvent, hideCaster, sourceGUID, sourceName, _, _, destGUID, destName, _, _, spellName, amount, overkill, damageType = ...
 
     local _, _, iconFileId = GetSpellInfo(294480)
     return DamageEvent:new(
         "ENVIRONMENTAL_DAMAGE",
         time,
-        sourceName,
         "Environment",
+        spellName,
         amount,
         damageType,
         overkill,
@@ -125,9 +125,6 @@ function DamageEvent:round(num, numDecimalPlaces)
 end
 
 function DamageEvent:sourceNameWithoutServer()
-    if self.sourceName == nil then
-        return "FLOOR"
-    end
     local name = self.sourceName:match("^(.-)-")
     if not name then
         name = self.sourceName
@@ -158,16 +155,14 @@ function DamageHistory:addDamage(health, ...)
     if eventType == "SWING_DAMAGE" then
         local damageEvent = DamageEvent:fromSwing(health, ...)
         table.insert(self.history, damageEvent)
-
+    elseif eventType == "ENVIRONMENTAL_DAMAGE" then
+        local damageEvent = DamageEvent:fromEnvironmental(health, ...)
+        table.insert(self.history, damageEvent)
     else -- there are multiple spell damage types
         local damageEvent = DamageEvent:fromSpell(health, ...)
         table.insert(self.history, damageEvent)
     end
 
-    if eventType == "ENVIRONMENTAL_DAMAGE" then
-        local damageEvent = DamageEvent:fromEnvironmental(health, ...)
-        table.insert(self.history, damageEvent)
-    end
 end
 
 function DamageHistory:getLastDamage()
@@ -468,6 +463,7 @@ function EventHandler:process(historySize, ...)
         SPELL_DAMAGE = true,
         SWING_DAMAGE = true,
         RANGE_DAMAGE = true,
+        ENVIRONMENTAL_DAMAGE = true,
         SPELL_PERIODIC_DAMAGE = true,
         SPELL_BUILDING_DAMAGE = true
     }
@@ -480,13 +476,12 @@ function EventHandler:process(historySize, ...)
         self:roster(historySize)
         
     elseif  subEvent == "UNIT_DIED" then
-        return self:activePlayerDied(...)
+        self:activePlayerDied(...)
 
 
     elseif damageEvents[subEvent] then
         self:damage(...)
     end
-    return false
 end
 
 function EventHandler:activePlayerDied(...)
@@ -518,13 +513,11 @@ function EventHandler:damage(...)
         end
 end
 
-function EventHandler:death(...)
-    local destGUID = select(9, ...)
+function EventHandler:death(eventTime, destGUID)
     local player = self.group:getPlayer(destGUID)
     
     if player then
         self.playerDied = true
-        local eventTime = select(2, ...)
         local stateEmitter = StateEmitter:new(self.deathCount)
         self.newStates = stateEmitter:run(player, eventTime)
         player:getDamageHistory():resetHistory()
@@ -550,3 +543,13 @@ end
 -- Setup WA Environment
 local eventHandler = EventHandler:new()
 aura_env.eventHandler = eventHandler
+
+aura_env.printEvents =  function(...)
+    local args = {...}  -- Put all variable arguments into a table
+    for i = 1, select('#', ...) do
+        args[i] = '"' .. tostring(args[i]) .. '"'  -- Convert each argument to a string
+    end
+
+    local argsString = table.concat(args, " ")  -- Concatenate all elements with a comma and space as separator
+    print(argsString)
+end
