@@ -15,6 +15,7 @@
         "UnitName",
         "UnitGUID",
         "ipairs",
-        "math"
+        "math",
+        "ENVIRONMENTAL_DAMAGE"
     ]
 }
