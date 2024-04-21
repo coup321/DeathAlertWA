@@ -104,10 +104,10 @@ end
 
 function DamageEvent:getOverkill()
     if self.overkill > 0 then 
-        return " (" .. string.format(" %.1fk", self.overkill/1000).." overkill)"
+        return " (" .. string.format("%.1fk", self.overkill/1000).." overkill)"
     end
 
-    return "(?? overkill)"
+    return " (?? overkill)"
 end
 
 function DamageEvent:getIcon()
