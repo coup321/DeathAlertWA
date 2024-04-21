@@ -125,6 +125,9 @@ function DamageEvent:round(num, numDecimalPlaces)
 end
 
 function DamageEvent:sourceNameWithoutServer()
+    if self.sourceName == nil then
+        return "FLOOR"
+    end
     local name = self.sourceName:match("^(.-)-")
     if not name then
         name = self.sourceName
@@ -407,21 +410,33 @@ function Group:addPlayer(unitId, historySize)
     end
 end
 
+function Group:removeAbsentPlayers()
+    local partyMembers = {}
+    for unitId in WA_IterateGroupMembers() do
+        partyMembers[UnitGUID(unitId)] = true
+    end
+
+    for playerGUID, _ in pairs(self.players) do
+        if not partyMembers[playerGUID] then
+            self.players[playerGUID] = nil
+        end
+    end
+end
+
 function Group:update(historySize)
     if not self.players then
         self.players = {}
     end
     for unitId in WA_IterateGroupMembers() do
-        local name = UnitName(unitId)
         local playerGUID = UnitGUID(unitId)
         local player = self.players[playerGUID]
         if player then
             player:updateUnitId(unitId)
-            
         else
             self:addPlayer(unitId, historySize)
         end
     end
+
     return self
 end
 
