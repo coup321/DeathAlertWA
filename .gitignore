@@ -1,2 +1,3 @@
 test/*
 profiling/*
+.vscode/settings.json
