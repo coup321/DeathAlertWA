@@ -12,6 +12,7 @@ function()
         local icon = tostring(aura_env.state.icon)
         
         return name .. " died to " .. "|T" .. icon .. ":16|t " .. coloredAbilityName .. " from " .. sourceName .. " for " .. coloredAmount .. overkill
-        
+    else
+        return "DEATH SUMMARY"
     end 
 end
