@@ -7,8 +7,12 @@ Death summary text and bars are the two main components of the weak aura and com
 ## Death summary text
 Shows the player, spell, spell type, and overkill:
 
+![summary text](images/summary_text.png)
+
 ## Death summary bars
 Shows individual damage events leading up to the party member's death. It includes the time when the damage was taken relative to the death, the ability name, the name of the source of the damage, the amount of damage, and (optionally) the overkill ammount.
+
+![summary bars](images/summary_bars.png)
 
 # Instructions for use
 ## Default setup
@@ -50,3 +54,6 @@ On my performance profiling, this weak aura did not use any more resources than 
 
 # Feedback and contribution
 This is quite a complex implementation, and I'm sure there are still many bugs despite my best efforts. I'll be maintaining this weak aura actively for some time and am happy to take suggestions, feedback, or contributions. You can leave an issue on the github page, message me in game @Coupmd-Thrall, or fine me online at twitch.tv/coupmd.
+
+[Github](https://github.com/coup321/DeathAlertWA)
+[Twitch.tv/coupmd](twitch.tv/coupmd)
