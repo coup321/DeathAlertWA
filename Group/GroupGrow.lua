@@ -1,9 +1,11 @@
 function(newPositions, activeRegions)
     -- get config from Bars aura
     local config
+    local width
     for i, env in pairs(aura_env.child_envs) do
         if env.config.numberOfDeathsToShow ~= nil then
             config = env.config
+            barWidth = env.region.width
         end
     end
 
@@ -29,7 +31,7 @@ function(newPositions, activeRegions)
         end
 
         local show = i > #activeRegions - maxNumberOfRows
-        local x = width
+        local x = width - barWidth / 2
         y = y - height + padding
 
         newPositions[i] = {x, y, show}
