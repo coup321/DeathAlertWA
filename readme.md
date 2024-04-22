@@ -19,6 +19,9 @@ Shows individual damage events leading up to the party member's death. It includ
 By default the weak aura is imported in a configuration with the summary text on top of the screen and the summary bars on the left of the screen. These can be moved, recolored, or resized to your liking. It will show up to 5 summary text events and 1 set of summary bars by default.
 
 ![default setup](images/default-setup.png)
+![death summary text options](images/death_summary_options.png)
+![death summary bar options](images/death_bar_options.png)
+
 
 ## Adding more death events
 You can increase the number of summary text events by increasing the bar limit in the weak aura dynamic group (default: 3).
