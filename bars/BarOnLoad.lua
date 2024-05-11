@@ -125,6 +125,9 @@ function DamageEvent:round(num, numDecimalPlaces)
 end
 
 function DamageEvent:sourceNameWithoutServer()
+    if not self.sourceName then
+        return "Environment"
+    end
     local name = self.sourceName:match("^(.-)-")
     if not name then
         name = self.sourceName
