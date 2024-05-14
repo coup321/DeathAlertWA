@@ -223,6 +223,7 @@ function Config:new(config, deathCount)
     config = config or aura_env.config  -- Fallback to aura_env.config if no config is provided
     local instance = setmetatable({}, Config)
     instance.visibilityDuration = config.visibilityDuration
+    instance.sortAscending = config.sortAscending
     instance.displaySimplePlayerName = config.displaySimplePlayerName
     instance.displayDeathText = config.displayDeathText
     instance.displayDeathTextSeparately = config.displayDeathTextSeparately
@@ -322,6 +323,14 @@ function StateEmitter:run(player, emitTime)
 end
 
 function StateEmitter:runBars(history, emitTime, visibilityDuration)
+    local sortAscending = self.config.sortAscending
+    if sortAscending then
+        local reversedHistory = {}
+        for i = #history, 1, -1 do
+            table.insert(reversedHistory, history[i])
+        end
+        history = reversedHistory
+    end
     local newStates = {}
     for i, damageEvent in ipairs(history) do
 
