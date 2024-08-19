@@ -1,3 +1,5 @@
+local GetSpellInfo = C_Spell and C_Spell.GetSpellInfo or GetSpellInfo
+
 -- DamageEvent
 local DamageEvent = {}
 DamageEvent.__index = DamageEvent
@@ -20,7 +22,7 @@ end
 function DamageEvent:fromSwing(health, ...)
     local _, time, _, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, amount, overkill, damageType = ...
 
-    local _, _, iconFileId = GetSpellInfo(260421)
+    local iconFileId = GetSpellInfo(260421)["iconID"]
     return DamageEvent:new(
         "SWING_DAMAGE",
         time,
@@ -36,7 +38,8 @@ end
 
 function DamageEvent:fromSpell(health, ...)
     local _, time, subEvent, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, spellId, spellName, damageType, amount, overkill  = ...
-    local _, _, iconFileId = GetSpellInfo(spellId)
+    
+    local iconFileId = GetSpellInfo(spellId)["iconID"]
     return DamageEvent:new(
         "SPELL_DAMAGE",
         time,
@@ -56,7 +59,7 @@ function DamageEvent:fromEnvironmental(health, ...)
 
     local _, time, subEvent, hideCaster, sourceGUID, sourceName, _, _, destGUID, destName, _, _, spellName, amount, overkill, damageType = ...
 
-    local _, _, iconFileId = GetSpellInfo(294480)
+    local iconFileId = GetSpellInfo(294480)["iconID"]
     return DamageEvent:new(
         "ENVIRONMENTAL_DAMAGE",
         time,
